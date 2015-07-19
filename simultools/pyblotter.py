@@ -29,8 +29,8 @@ class Account:
         """
         add one row for txns and eq with index as txnDate
         """
-        self.txns.ix[txnDate] = self.txns.tail(1).values
-        self.eq.ix[txnDate] = self.eq.tail(1).values
+        self.txns.ix[txnDate] = self.txns.tail(1).values.reshape([len(self.txns.columns),])
+        self.eq.ix[txnDate] = self.eq.tail(1).values.reshape([len(self.eq.columns),])
         
     def addTxn(self, txnDate, symbol, txnAmt):
         """
