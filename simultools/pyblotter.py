@@ -48,29 +48,31 @@ class Account:
         shifted_txns = self.txns.shift(1)
         # for each symbol in txns
         for symbol in self.txns.columns:
-            # if there's no position, skip.
-            if self.eq.ix[currDate, symbol] != 0.0 or self.txns.ix[currDate, symbol] != 0.0:
-                # if any position exist for this symbol before, then eq should be multiplyied by return of symbol
-                # return of symbol for today is return from previous day to today
-                self.eq.ix[currDate, symbol] = self.eq.ix[currDate, symbol] * (1.0 + value[symbol])
-                # Check if transaction occur
-                before_txns = self.eq.ix[currDate, symbol]
-                if self.txns.ix[currDate, symbol] != shifted_txns.ix[currDate, symbol]:
-                    """
-                    Cases: same logic can be applied to case 1, 2
-                    1. Sell all existing position
-                    2. Sell partial existing position
-                    3. add to existing position
-                    """
-                    # case 3, add to eq
-                    if self.txns.ix[currDate, symbol] > shifted_txns.ix[currDate, symbol]:
-                        self.eq.ix[currDate, symbol] = before_txns + (self.txns.ix[currDate, symbol] - shifted_txns.ix[currDate, symbol])
-                        self.eq.ix[currDate, 'Cash'] = self.eq.ix[currDate, 'Cash'] - (self.txns.ix[currDate, symbol] - shifted_txns.ix[currDate, symbol])
-                    # case 1, 2
-                    else :
-                        if self.txns.ix[currDate, symbol] < shifted_txns.ix[currDate, symbol]:
-                            self.eq.ix[currDate, symbol] = before_txns + before_txns * (self.txns.ix[currDate, symbol] - shifted_txns.ix[currDate, symbol]) / shifted_txns.ix[currDate, symbol]
-                            self.eq.ix[currDate, 'Cash'] = self.eq.ix[currDate, 'Cash'] + before_txns - self.eq.ix[currDate, symbol]
+            """
+            Cases                   
+            1. no position before and after - skip
+            2. there was position or position change
+                2-1. no position before, new position
+                2-2. position before, either close out or adjust position
+            """
+            # Case 1. if there's no position, skip.
+            # Case 2.
+            if shifted_txns.ix[currDate, symbol] != 0.0 or self.txns.ix[currDate, symbol] != 0.0:
+                #2-1. no position before, new position
+                if shifted_txns.ix[currDate, symbol] == 0.0:
+                    # position long or short
+                    self.eq.ix[currDate, symbol] = self.txns.ix[currDate, symbol]
+                    self.eq.ix[currDate, 'Cash'] = self.eq.ix[currDate, 'Cash'] - self.txns.ix[currDate, symbol]
+                else:
+                    #2-2. position before, either close out or adjust position
+                    # if any position exist for this symbol before, then eq should be multiplyied by return of symbol
+                    # NOTE: return of symbol for today is return from previous day to today
+                    self.eq.ix[currDate, symbol] = self.eq.ix[currDate, symbol] * (1.0 + value[symbol])
+                    # if position changed
+                    if self.txns.ix[currDate, symbol] != shifted_txns.ix[currDate, symbol]:
+                        before_txns_eq = self.eq.ix[currDate, symbol]
+                        self.eq.ix[currDate, symbol] = before_txns_eq + before_txns_eq * (self.txns.ix[currDate, symbol] - shifted_txns.ix[currDate, symbol]) / shifted_txns.ix[currDate, symbol]
+                        self.eq.ix[currDate, 'Cash'] = self.eq.ix[currDate, 'Cash'] + before_txns_eq - self.eq.ix[currDate, symbol]
 
     def getEq(self, currDate):
         """
