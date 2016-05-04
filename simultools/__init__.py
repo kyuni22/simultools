@@ -1,1 +1,2 @@
-from .pyblotter import Account
+from pyblotter import Account
+from pyperformanceanalytics import PerformanceAnalytics

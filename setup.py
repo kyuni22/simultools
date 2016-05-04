@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='simultools',
-      version='0.0.1',
+      version='0.0.2',
       description='tools for backtesting and other trading issues',
       url='https://github.com/kyuni22/simultools',
       author='kyuni22',
