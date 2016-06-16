@@ -32,13 +32,14 @@ class PerformanceAnalytics():
         bins = np.arange(min(self.daily_ret),max(self.daily_ret)+bin_unit, bin_unit)
         self.daily_ret[self.daily_ret!=0].hist(bins=bins)
     
-    def measures(self):
+    def measures(self, annualize_factor=1.0):
         measures = {}
-        measures['Profit Factor'] = abs(self.daily_ret[self.daily_ret>0].sum() / self.daily_ret[self.daily_ret<0].sum())
-        measures['Win Ratio'] = self.daily_ret[self.daily_ret>0].count()*1.0 / (self.daily_ret[self.daily_ret<0].count()+self.daily_ret[self.daily_ret>0].count())*1.0
-        measures['Avg Loss'] = self.daily_ret[self.daily_ret<0].mean()
-        measures['Avg PL Per Trade'] = self.daily_ret.sum() / self.daily_ret.count()
+        measures['Avg PL'] = self.daily_ret.mean() * annualize_factor
+        measures['Stdev'] = self.daily_ret.std() * np.sqrt(annualize_factor)
+        measures['Sharpe Ratio'] = measures['Avg PL'] / measures['Stdev']
         measures['MDD'] = self.dd.min()
+        measures['Hit Rate'] = self.daily_ret[self.daily_ret>0].count()*1.0 / (self.daily_ret[self.daily_ret<=0].count()+self.daily_ret[self.daily_ret>0].count())*1.0        
+        
         return Series(measures)
 
     def getOtherDDInfo(self):
