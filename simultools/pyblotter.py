@@ -67,7 +67,9 @@ class Account:
                     #2-2. position before, either close out or adjust position
                     # if any position exist for this symbol before, then eq should be multiplyied by return of symbol
                     # NOTE: return of symbol for today is return from previous day to today
-                    self.eq.ix[currDate, symbol] = self.eq.ix[currDate, symbol] * (1.0 + value[symbol])
+                    ## check if return data(value) is is not nan, then do something. otherwise leave it as if return is 0 <== Should be considered later
+                    if not np.isnan(value[symbol]):
+                        self.eq.ix[currDate, symbol] = self.eq.ix[currDate, symbol] * (1.0 + value[symbol])
                     # if position changed
                     if self.txns.ix[currDate, symbol] != shifted_txns.ix[currDate, symbol]:
                         before_txns_eq = self.eq.ix[currDate, symbol]
@@ -94,3 +96,30 @@ class Account:
         get equty curve of account
         """
         return self.eq.sum(axis=1)
+        
+def backtest(simPeriod, simPF, universe, rebalDate, retData, initAmt=100.0):
+    testAcct = Account(simPeriod[0], universe, initAmt)
+    testUniv = testAcct.getUniverse()
+
+    for i in range(1, len(simPeriod)):
+        tday = simPeriod[i]
+        testAcct.addTxnDate(tday)
+        equity = initAmt # Invest only initAmt. change later for all amt
+
+        # if today is rebalancing date
+        if tday in rebalDate:
+            # Calculate amount to invest
+            amtToInvest = equity / len(simPF.ix[tday, 'code']) * 1.0
+            # loop for all symbols in universe
+            for symbol in testUniv:
+                position = testAcct.getPos(tday, symbol)
+                # check if symbol is in the portfolio list or not
+                if symbol in simPF.ix[tday, 'code'].values:
+                # take position accordingly
+                    testAcct.addTxn(tday, symbol, amtToInvest-position)
+                else:
+                    testAcct.addTxn(tday, symbol, -position)
+
+        testAcct.updateAcct(tday, retData.ix[tday])
+    
+    return testAcct
