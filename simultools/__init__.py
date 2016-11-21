@@ -1,2 +1,3 @@
 from pyblotter import Account
 from pyperformanceanalytics import PerformanceAnalytics
+from weight_backtest import price_backtest, return_backtest
