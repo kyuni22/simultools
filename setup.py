@@ -11,6 +11,6 @@ setup(name='simultools',
       license='MIT',
       packages=['simultools'],
       install_requires=[
-          'pandas',
+          'pandas', 'numpy'
       ],
       zip_safe=False)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 PerformanceAnalytics for backtesting
+todos: performance measures
 """
 
 import numpy as np
@@ -16,8 +17,8 @@ class PerformanceAnalytics():
         # daily ret
         self.daily_ret = daily_ret
         # Equity Curve Series
-        self.cum_ret = daily_ret.fillna(0).cumsum()
-        # Drawdown Seriesfa
+        self.cum_ret = (1.+daily_ret.fillna(0)).cumprod()
+        # Drawdown Series
         self.dd = self.cum_ret - self.cum_ret.cummax()
 
     def getCumRet(self):
@@ -29,9 +30,9 @@ class PerformanceAnalytics():
     def describe(self):
         return self.daily_ret[self.daily_ret != 0].describe()
 
-    def hist(self, bin_unit):
+    def hist(self, bin_unit=0.01):
         bins = np.arange(min(self.daily_ret), max(self.daily_ret) + bin_unit, bin_unit)
-        self.daily_ret[self.daily_ret != 0].hist(bins=bins)
+        self.daily_ret.hist(bins=bins)
 
     def measures(self, annualize_factor=1.0):
         measures = {}

@@ -1,3 +1,4 @@
 from pyblotter import Account
 from pyperformanceanalytics import PerformanceAnalytics
-from weight_backtest import price_backtest, return_backtest
+from weight_backtest import price_backtest, return_backtest, groupby_backtest
+from finhelpers import endpoints, qcut_signal, get_weights_by_signal
